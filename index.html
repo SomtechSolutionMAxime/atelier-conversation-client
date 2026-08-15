@@ -417,5 +417,31 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(el(App, null));
   </script>
+
+  <!-- Rafraîchissement automatique : le lecteur n'a rien à faire pour voir la version suivante. -->
+  <script>
+  (function () {
+    var SECONDES = 10;
+    var pastille = document.createElement('div');
+    pastille.style.cssText = 'position:fixed;right:10px;bottom:10px;z-index:9999;font:11px -apple-system,system-ui,sans-serif;'
+      + 'background:rgba(15,23,42,.88);color:#e2e8f0;padding:5px 10px;border-radius:999px;display:flex;align-items:center;gap:6px;'
+      + 'box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none';
+    var point = document.createElement('span');
+    point.style.cssText = 'width:6px;height:6px;border-radius:50%;background:#34d399;display:inline-block';
+    var texte = document.createElement('span');
+    pastille.appendChild(point); pastille.appendChild(texte);
+    document.body.appendChild(pastille);
+
+    var reste = SECONDES;
+    texte.textContent = 'Mise à jour automatique — ' + reste + ' s';
+    setInterval(function () {
+      reste = reste - 1;
+      if (reste > 0) { texte.textContent = 'Mise à jour automatique — ' + reste + ' s'; return; }
+      texte.textContent = 'Mise à jour…';
+      // Paramètre variable : contourne le cache du navigateur, qui resservirait sinon l'ancienne version.
+      location.replace(location.pathname + '?maj=' + Date.now());
+    }, 1000);
+  })();
+  </script>
 </body>
 </html>
