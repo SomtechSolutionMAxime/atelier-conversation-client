@@ -181,6 +181,71 @@ const STYLE_TYPE = {
 };
 
 // ============================================================
+// LE BANDEAU « ELLE TRAVAILLE » — ce que le client voit pendant
+// que Camille cherche. Des phrases de conversation, jamais des
+// journaux techniques : le client n'a rien à décoder.
+// ============================================================
+const ETAPES = [
+  'Je relis votre cahier des charges, le passage sur les fournisseurs…',
+  'Je remets la main sur ce qu’on s’était dit à la rencontre du 12 août…',
+  'Je compare la version 2 de la maquette avec vos remarques de mardi…',
+  'Je vérifie que les dates de novembre tiennent toujours…',
+  'Je rassemble tout ça pour vous répondre d’un coup…'
+];
+const FINI = 'J’ai fini — regardez à droite, j’ai ouvert les documents dont on parlait.';
+
+function BandeauTravail() {
+  // L'étape est retenue d'un rafraîchissement à l'autre : la recherche
+  // continue son chemin au lieu de repartir de zéro sous les yeux du lecteur.
+  const depart = (function () {
+    try { return parseInt(sessionStorage.getItem('etape') || '0', 10) || 0; } catch (e) { return 0; }
+  })();
+  const [i, setI] = useState(depart);
+
+  useEffect(function () {
+    const t = setInterval(function () {
+      setI(function (p) {
+        const suivant = (p + 1) % (ETAPES.length + 1);
+        try { sessionStorage.setItem('etape', String(suivant)); } catch (e) {}
+        return suivant;
+      });
+    }, 3200);
+    return function () { clearInterval(t); };
+  }, []);
+
+  const termine = i >= ETAPES.length;
+  const phrase = termine ? FINI : ETAPES[i];
+
+  const points = [0, 1, 2].map(function (n) {
+    return el('span', {
+      key: n,
+      className: 'h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse',
+      style: { animationDelay: (n * 180) + 'ms' }
+    });
+  });
+
+  return el('div', {
+    className: 'px-4 py-2.5 border-b transition-colors ' +
+      (termine ? 'bg-emerald-50/70 border-emerald-100' : 'bg-teal-50/70 border-teal-100')
+  },
+    el('div', { className:'flex items-start gap-2.5' },
+      el('div', { className:'shrink-0 h-7 w-7 rounded-md bg-teal-600 text-white text-[10px] font-bold flex items-center justify-center' }, 'CR'),
+      el('div', { className:'min-w-0 flex-1' },
+        el('div', { className:'flex items-center gap-2' },
+          termine
+            ? el('span', { className:'flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700' },
+                el(CheckCheck, { size:12 }), 'Camille a terminé')
+            : el('span', { className:'flex items-center gap-1.5' },
+                el('span', { className:'text-[10px] font-semibold uppercase tracking-wide text-teal-700' }, 'Camille cherche pour vous'),
+                el('span', { className:'flex items-center gap-1' }, ...points))),
+        el('p', {
+          key: i,
+          className:'text-[13px] leading-snug mt-0.5 ' + (termine ? 'text-emerald-900' : 'text-slate-700')
+        }, phrase)))
+  );
+}
+
+// ============================================================
 // COLONNE GAUCHE — la conversation (la même que dans Slack)
 // ============================================================
 function Message({ m, actif, ouvert, onClick }) {
@@ -227,6 +292,7 @@ function Conversation({ actifOnglet, ouverts, ouvrirOnglet, msgRefs }) {
       el('div', { className:'flex items-center gap-1.5 mt-1' },
         el(Smartphone, { size:12, className:'text-slate-400' }),
         el('p', { className:'text-[11px] text-slate-500' }, 'Aussi disponible dans Slack — c’est le même fil.'))),
+    el(BandeauTravail, null),
     el('div', { className:'flex-1 overflow-y-auto py-2' },
       MESSAGES.map(function (m) {
         const sep = premierNouveau && m.id === premierNouveau.id
