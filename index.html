@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atelier de conversation client — croquis</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100">
+  <div id="root" class="h-screen"></div>
+  <script>
+const { useState, useEffect, useRef } = React;
+const el = React.createElement;
+
+// ============================================================
+// ICONES (SVG inline)
+// ============================================================
+const createIcon = (paths) => {
+  return function IconComponent(props) {
+    const { className = '', size = 24, ...rest } = props || {};
+    return React.createElement('svg', {
+      xmlns: 'http://www.w3.org/2000/svg',
+      width: size, height: size, viewBox: '0 0 24 24',
+      fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+      strokeLinecap: 'round', strokeLinejoin: 'round',
+      className: className, ...rest
+    }, ...paths.map((p, i) => {
+      if (typeof p === 'string') return React.createElement('path', { key: i, d: p });
+      return React.createElement(p.tag, { key: i, ...p.attrs });
+    }));
+  };
+};
+
+const Send = createIcon([{tag:'line',attrs:{x1:22,y1:2,x2:11,y2:13}},{tag:'polygon',attrs:{points:'22 2 15 22 11 13 2 9 22 2'}}]);
+const Info = createIcon([{tag:'circle',attrs:{cx:12,cy:12,r:10}},{tag:'line',attrs:{x1:12,y1:16,x2:12,y2:12}},{tag:'line',attrs:{x1:12,y1:8,x2:12.01,y2:8}}]);
+const Smartphone = createIcon([{tag:'rect',attrs:{width:14,height:20,x:5,y:2,rx:2,ry:2}},{tag:'line',attrs:{x1:12,y1:18,x2:12.01,y2:18}}]);
+const X = createIcon([{tag:'line',attrs:{x1:18,y1:6,x2:6,y2:18}},{tag:'line',attrs:{x1:6,y1:6,x2:18,y2:18}}]);
+const Plus = createIcon([{tag:'line',attrs:{x1:12,y1:5,x2:12,y2:19}},{tag:'line',attrs:{x1:5,y1:12,x2:19,y2:12}}]);
+const AlertTriangle = createIcon(['M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z',{tag:'line',attrs:{x1:12,y1:9,x2:12,y2:13}},{tag:'line',attrs:{x1:12,y1:17,x2:12.01,y2:17}}]);
+const FileText = createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',{tag:'polyline',attrs:{points:'14 2 14 8 20 8'}},{tag:'line',attrs:{x1:16,y1:13,x2:8,y2:13}},{tag:'line',attrs:{x1:16,y1:17,x2:8,y2:17}}]);
+const LayoutIcon = createIcon([{tag:'rect',attrs:{width:18,height:18,x:3,y:3,rx:2}},{tag:'line',attrs:{x1:3,y1:9,x2:21,y2:9}},{tag:'line',attrs:{x1:9,y1:21,x2:9,y2:9}}]);
+const Ticket = createIcon(['M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z',{tag:'line',attrs:{x1:13,y1:5,x2:13,y2:19}}]);
+const Eye = createIcon(['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z',{tag:'circle',attrs:{cx:12,cy:12,r:3}}]);
+const EyeOff = createIcon(['M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24',{tag:'line',attrs:{x1:1,y1:1,x2:23,y2:23}}]);
+const Hash = createIcon([{tag:'line',attrs:{x1:4,y1:9,x2:20,y2:9}},{tag:'line',attrs:{x1:4,y1:15,x2:20,y2:15}},{tag:'line',attrs:{x1:10,y1:3,x2:8,y2:21}},{tag:'line',attrs:{x1:16,y1:3,x2:14,y2:21}}]);
+const CornerUpLeft = createIcon([{tag:'polyline',attrs:{points:'9 14 4 9 9 4'}},{tag:'path',attrs:{d:'M20 20v-7a4 4 0 0 0-4-4H4'}}]);
+
+// ============================================================
+// DONNEES FICTIVES  (aucune donnee reelle — noms inventes)
+// ============================================================
+const CANAL = 'verdelune-x-somtech';
+
+const MESSAGES = [
+  { id:'m1', h:'09:12', qui:'client', nom:'Étienne Bélanger', org:'Groupe Verdelune', onglet:'doc-cahier',
+    texte:'Bonjour Camille ! On a relu la proposition pour le portail. Une question de ma directrice : l’accès des fournisseurs, il est compris dans le forfait ou c’est en plus ?' },
+  { id:'m2', h:'09:15', qui:'somtech', nom:'Camille Rousseau', org:'Somtech', onglet:'doc-cahier',
+    texte:'Bonjour Étienne. Il est compris — c’est le lot 2 du cahier. Je te remets le passage exact.' },
+  { id:'m3', h:'09:16', qui:'somtech', nom:'Camille Rousseau', org:'Somtech', onglet:'doc-cahier',
+    texte:'Cahier des charges — Portail Verdelune, section 4.2.', piece:'Cahier des charges — Portail Verdelune v0.3' },
+  { id:'m4', h:'09:41', qui:'client', nom:'Étienne Bélanger', org:'Groupe Verdelune', onglet:'billet-42',
+    texte:'Autre chose : depuis ce matin, deux personnes de l’entrepôt n’arrivent plus à entrer. Ça tourne, puis ça les ramène à la page de connexion.' },
+  { id:'m5', h:'09:43', qui:'somtech', nom:'Camille Rousseau', org:'Somtech', onglet:'billet-42',
+    texte:'Je regarde ça tout de suite. C’est sur téléphone ou sur ordinateur ?' },
+  { id:'m6', h:'09:44', qui:'client', nom:'Étienne Bélanger', org:'Groupe Verdelune', onglet:'billet-42',
+    texte:'Sur téléphone. Sur ordinateur, ça passe.' },
+  { id:'m7', h:'10:02', qui:'somtech', nom:'Camille Rousseau', org:'Somtech', onglet:'billet-42',
+    texte:'Reproduit de mon côté : la session expire trop tôt sur téléphone. Correctif aujourd’hui, je te confirme dès que c’est en ligne.' },
+  { id:'m8', h:'11:20', qui:'client', nom:'Étienne Bélanger', org:'Groupe Verdelune', onglet:'maq-accueil',
+    texte:'Merci. Et pour la page d’accueil du portail — on peut revoir le haut de page ? Ma directrice le trouve trop chargé.' },
+  { id:'m9', h:'11:23', qui:'somtech', nom:'Camille Rousseau', org:'Somtech', onglet:'maq-accueil',
+    texte:'Oui. Je te sors la version 2 avec un bandeau allégé, tu compares les deux et tu me dis.' },
+  { id:'m10', h:'11:31', qui:'client', nom:'Étienne Bélanger', org:'Groupe Verdelune', onglet:'billet-11',
+    texte:'Et le calendrier du lot 2, il tient toujours pour novembre ?' }
+];
+
+// ============================================================
+// PETITS RENDUS
+// ============================================================
+function Wireframe({ variante }) {
+  const bandeau = variante === 1
+    ? el('div', { className:'bg-slate-800 rounded-md p-3 space-y-2' },
+        el('div', { className:'h-4 w-2/3 bg-slate-500 rounded' }),
+        el('div', { className:'h-2.5 w-full bg-slate-600 rounded' }),
+        el('div', { className:'h-2.5 w-4/5 bg-slate-600 rounded' }),
+        el('div', { className:'flex gap-2 pt-1' },
+          el('div', { className:'h-6 w-20 bg-slate-500 rounded' }),
+          el('div', { className:'h-6 w-20 bg-slate-600 rounded' }),
+          el('div', { className:'h-6 w-20 bg-slate-600 rounded' })))
+    : el('div', { className:'bg-slate-800 rounded-md p-3' },
+        el('div', { className:'h-4 w-1/2 bg-slate-500 rounded' }));
+  return el('div', { className:'flex-1 min-w-0' },
+    el('div', { className:'text-[11px] font-semibold text-slate-500 mb-1.5' }, variante === 1 ? 'v1 — actuelle' : 'v2 — allégée'),
+    el('div', { className:'border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3' },
+      bandeau,
+      el('div', { className:'grid grid-cols-3 gap-2' },
+        el('div', { className:'h-14 bg-white border border-slate-200 rounded' }),
+        el('div', { className:'h-14 bg-white border border-slate-200 rounded' }),
+        el('div', { className:'h-14 bg-white border border-slate-200 rounded' })),
+      el('div', { className:'h-20 bg-white border border-slate-200 rounded' })));
+}
+
+function Etiq({ t, c }) {
+  return el('span', { className:'text-[11px] rounded px-2 py-0.5 ' + c }, t);
+}
+
+// ============================================================
+// LES ONGLETS — plusieurs contextes ouverts en meme temps
+// ============================================================
+const ONGLETS = {
+  'doc-cahier': {
+    type:'doc', court:'Cahier des charges v0.3',
+    titre:'Cahier des charges — Portail Verdelune v0.3',
+    meta:'Somcraft · /clients/verdelune/cahiers · modifié il y a 3 jours par C. Rousseau',
+    ancre:'m3', ancreTexte:'évoqué à 09:16',
+    rendu: el('div', { className:'space-y-4' },
+      el('div', null,
+        el('p', { className:'text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1' }, '§ 4.2 — Accès fournisseurs'),
+        el('blockquote', { className:'border-l-2 border-sky-400 pl-4 text-[14px] text-slate-700 leading-relaxed' },
+          'Le portail ouvre un accès en lecture aux fournisseurs référencés : bons de commande en cours, dates de livraison confirmées, historique sur 12 mois. Cet accès fait partie du lot 2 et n’entraîne pas de coût additionnel.')),
+      el('div', null,
+        el('p', { className:'text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1' }, '§ 4.3 — Ce qui reste hors portée'),
+        el('blockquote', { className:'border-l-2 border-slate-300 pl-4 text-[14px] text-slate-600 leading-relaxed' },
+          'La saisie de factures par le fournisseur n’est pas couverte. Elle fera l’objet d’une demande séparée.')),
+      el('p', { className:'text-[11px] text-slate-400' }, '3 autres passages du document mentionnent « fournisseur ».'))
+  },
+  'billet-42': {
+    type:'billet', court:'T-…-0042 Connexion mobile',
+    titre:'T-20260815-0042 — [FIX] La session mobile expire au bout de deux minutes',
+    meta:'ServiceDesk · incident · priorité haute · en cours · assigné à Camille',
+    ancre:'m4', ancreTexte:'ouvert depuis le message de 09:41',
+    rendu: el('div', { className:'space-y-4' },
+      el('div', { className:'flex flex-wrap gap-2' },
+        el(Etiq, { t:'Incident', c:'bg-rose-100 text-rose-800' }),
+        el(Etiq, { t:'Priorité haute', c:'bg-rose-100 text-rose-800' }),
+        el(Etiq, { t:'Reproduit', c:'bg-emerald-100 text-emerald-800' }),
+        el(Etiq, { t:'Correctif du jour', c:'bg-slate-100 text-slate-600' })),
+      el('div', { className:'bg-slate-50 border border-slate-200 rounded-lg p-4 text-[13px] leading-relaxed space-y-1' },
+        el('p', null, el('b', null, 'Étant donné '), 'un employé connecté depuis un téléphone,'),
+        el('p', null, el('b', null, 'Quand '), 'il laisse l’écran s’éteindre deux minutes,'),
+        el('p', null, el('b', null, 'Alors '), 'il est renvoyé à la page de connexion.')),
+      el('div', { className:'text-[13px] text-slate-700 space-y-1' },
+        el('p', { className:'text-[11px] font-semibold uppercase tracking-wide text-slate-400' }, 'Journal'),
+        el('p', null, '09:47 — extrait de conversation joint au billet'),
+        el('p', null, '10:02 — reproduit sur téléphone, pas sur ordinateur'),
+        el('p', null, '10:14 — cause : durée de session mobile fixée à 120 s')))
+  },
+  'maq-accueil': {
+    type:'maq', court:'Maquette accueil v1/v2',
+    titre:'Page d’accueil du portail — haut de page',
+    meta:'Maquette client · comparaison v1 / v2 · en attente de l’avis du client',
+    ancre:'m8', ancreTexte:'évoqué à 11:20',
+    rendu: el('div', { className:'space-y-4' },
+      el('div', { className:'flex gap-4' }, el(Wireframe, { variante:1 }), el(Wireframe, { variante:2 })),
+      el('ul', { className:'text-[13px] text-slate-700 space-y-1 list-disc pl-4' },
+        el('li', null, 'Le bandeau v1 porte trois appels à l’action ; la directrice n’en veut qu’un.'),
+        el('li', null, 'v2 : titre seul, les raccourcis descendent dans la grille.'),
+        el('li', null, 'À trancher avec le client avant de toucher au code.')))
+  },
+  'billet-11': {
+    type:'billet', court:'E-…-0011 Lot 2',
+    titre:'E-20260803-0011 — Lot 2 : espace fournisseurs',
+    meta:'ServiceDesk · épique · planifiée · 6 récits · jalon novembre',
+    ancre:'m10', ancreTexte:'évoqué à 11:31',
+    rendu: el('div', { className:'space-y-4' },
+      el('div', { className:'flex flex-wrap gap-2' },
+        el(Etiq, { t:'Épique', c:'bg-indigo-100 text-indigo-800' }),
+        el(Etiq, { t:'Planifiée', c:'bg-amber-100 text-amber-800' }),
+        el(Etiq, { t:'Jalon : novembre', c:'bg-slate-100 text-slate-600' })),
+      el('p', { className:'text-[14px] text-slate-700 leading-relaxed' },
+        'Rattachée à l’exigence EF-07 du cahier. Le calendrier tient : 4 récits sur 6 sont estimés, aucun n’est commencé.'),
+      el('div', { className:'space-y-1.5' },
+        ['Lister les bons de commande d’un fournisseur','Filtrer par date de livraison','Exporter l’historique 12 mois'].map((r, i) =>
+          el('div', { key:i, className:'flex items-center gap-2 text-[13px] text-slate-600 border border-slate-200 rounded-lg px-3 py-2' },
+            el('span', { className:'h-1.5 w-1.5 rounded-full bg-amber-400' }), r))))
+  }
+};
+
+const STYLE_TYPE = {
+  doc:    { i: FileText,   c:'text-sky-600',    b:'bg-sky-100 text-sky-700',       l:'Document Somcraft' },
+  maq:    { i: LayoutIcon, c:'text-violet-600', b:'bg-violet-100 text-violet-700', l:'Maquette client' },
+  billet: { i: Ticket,     c:'text-rose-600',   b:'bg-rose-100 text-rose-700',     l:'Billet ServiceDesk' }
+};
+
+// ============================================================
+// COLONNE GAUCHE — la conversation (reconstruite, pas encastrée)
+// ============================================================
+function Bandeau() {
+  return el('div', { className:'flex items-start gap-2 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-[11px] leading-snug text-amber-900' },
+    el(AlertTriangle, { size:15, className:'shrink-0 mt-0.5 text-amber-600' }),
+    el('p', null,
+      el('span', { className:'font-semibold' }, 'Vue reconstruite. '),
+      'Slack refuse d’être affiché dans une page tierce (', el('code', { className:'bg-amber-100 px-1 rounded' }, 'x-frame-options'), ') : ce qu’on voit ici est notre propre affichage des messages du canal, pas Slack incrusté.')
+  );
+}
+
+function Message({ m, actif, ouvert, onClick }) {
+  const estClient = m.qui === 'client';
+  const st = STYLE_TYPE[ONGLETS[m.onglet].type];
+  return el('button', {
+    onClick: onClick,
+    title: 'Ouvrir « ' + ONGLETS[m.onglet].court +' » dans un onglet à droite',
+    className: 'group w-full text-left px-4 py-2.5 border-l-2 transition ' +
+      (actif ? 'border-indigo-500 bg-indigo-50/60 ' : 'border-transparent hover:bg-slate-50 ')
+  },
+    el('div', { className:'flex gap-2.5' },
+      el('div', { className:'shrink-0 h-8 w-8 rounded-md flex items-center justify-center text-[11px] font-bold text-white ' + (estClient ? 'bg-emerald-600' : 'bg-slate-700') },
+        m.nom.split(' ').map(x => x[0]).join('')),
+      el('div', { className:'min-w-0 flex-1' },
+        el('div', { className:'flex items-baseline gap-2' },
+          el('span', { className:'text-[13px] font-semibold text-slate-900' }, m.nom),
+          el('span', { className:'text-[10px] px-1.5 py-px rounded ' + (estClient ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700') }, m.org),
+          el('span', { className:'text-[11px] text-slate-400' }, m.h)),
+        el('p', { className:'text-[13px] text-slate-700 mt-0.5' }, m.texte),
+        m.piece ? el('span', { className:'mt-1.5 inline-flex items-center gap-2 border border-slate-200 rounded-md bg-white px-2.5 py-1.5' },
+          el(FileText, { size:14, className:'text-slate-500' }),
+          el('span', { className:'text-[12px] text-slate-700' }, m.piece)) : null,
+        el('span', { className:'mt-1.5 flex items-center gap-1 text-[10px] ' + (actif ? st.c : 'text-slate-400 opacity-0 group-hover:opacity-100') },
+          el(st.i, { size:11 }),
+          (ouvert ? 'onglet ouvert : ' : 'ouvrir l’onglet : ') + ONGLETS[m.onglet].court)
+      )
+    )
+  );
+}
+
+function Conversation({ actifOnglet, ouverts, ouvrirOnglet, msgRefs }) {
+  return el('section', { className:'w-[430px] shrink-0 flex flex-col bg-white border-r border-slate-200' },
+    el('header', { className:'px-4 py-3 border-b border-slate-200' },
+      el('div', { className:'flex items-center gap-1.5' },
+        el(Hash, { size:16, className:'text-slate-400' }),
+        el('h2', { className:'font-semibold text-slate-900 text-[15px]' }, CANAL)),
+      el('p', { className:'text-[11px] text-slate-500 mt-0.5' }, 'Canal partagé · 2 personnes chez le client, 3 chez nous')),
+    el(Bandeau, null),
+    el('div', { className:'flex-1 overflow-y-auto py-2' },
+      MESSAGES.map(m => el('div', { key:m.id, ref: (n) => { msgRefs.current[m.id] = n; } },
+        el(Message, {
+          m,
+          actif: m.onglet === actifOnglet,
+          ouvert: ouverts.indexOf(m.onglet) !== -1,
+          onClick: () => ouvrirOnglet(m.onglet)
+        })))),
+    el('div', { className:'p-3 border-t border-slate-200' },
+      el('div', { className:'flex items-center gap-2 border border-slate-300 rounded-lg px-3 py-2' },
+        el('span', { className:'flex-1 text-[13px] text-slate-400' }, 'Écrire dans le canal…'),
+        el(Send, { size:16, className:'text-slate-400' })),
+      el('p', { className:'text-[10px] text-slate-400 mt-1.5 text-center' }, 'Croquis — rien n’est envoyé, aucune connexion à Slack'))
+  );
+}
+
+// ============================================================
+// COLONNE DROITE — barre d'onglets + onglet actif
+// ============================================================
+function BarreOnglets({ ouverts, actif, setActif, fermer, tousOuverts, ouvrirOnglet }) {
+  const fermes = Object.keys(ONGLETS).filter(k => ouverts.indexOf(k) === -1);
+  const [menu, setMenu] = useState(false);
+  return el('div', { className:'relative bg-slate-200/70 border-b border-slate-300' },
+    el('div', { className:'flex items-end gap-1 px-2 pt-2 overflow-x-auto' },
+    ouverts.map(k => {
+      const o = ONGLETS[k];
+      const st = STYLE_TYPE[o.type];
+      const estActif = k === actif;
+      return el('div', {
+        key:k,
+        onClick: () => setActif(k),
+        className: 'group flex items-center gap-2 max-w-[230px] shrink-0 rounded-t-lg px-3 py-2 cursor-pointer border border-b-0 transition ' +
+          (estActif
+            ? 'bg-white border-slate-300 text-slate-900 shadow-[0_-1px_0_0_rgba(79,70,229,1)_inset,0_-3px_0_0_rgba(79,70,229,1)]'
+            : 'bg-slate-100/80 border-transparent text-slate-500 hover:bg-slate-100')
+      },
+        el(st.i, { size:14, className: estActif ? st.c : 'text-slate-400' }),
+        el('span', { className:'text-[12px] truncate ' + (estActif ? 'font-semibold' : '') }, o.court),
+        el('span', {
+          onClick: (e) => { e.stopPropagation(); fermer(k); },
+          className:'shrink-0 rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 ' + (estActif ? '' : 'opacity-0 group-hover:opacity-100')
+        }, el(X, { size:12 })));
+    }),
+    el('button', {
+      onClick: () => setMenu(!menu),
+      title:'Ouvrir un autre contexte',
+      className:'shrink-0 mb-1 ml-1 rounded p-1.5 text-slate-500 hover:bg-slate-300/70'
+    }, el(Plus, { size:15 }))),
+    menu ? el('div', { className:'absolute right-2 top-full z-20 w-72 bg-white border border-slate-200 rounded-xl shadow-lg p-1.5' },
+      el('p', { className:'text-[10px] uppercase tracking-wide text-slate-400 px-2 py-1.5' }, 'Contextes rattachés à ce canal'),
+      (fermes.length ? fermes : []).map(k => {
+        const st = STYLE_TYPE[ONGLETS[k].type];
+        return el('button', {
+          key:k,
+          onClick: () => { ouvrirOnglet(k); setMenu(false); },
+          className:'w-full flex items-center gap-2 text-left px-2 py-2 rounded-lg hover:bg-slate-50'
+        }, el(st.i, { size:14, className: st.c }),
+           el('span', { className:'text-[12px] text-slate-700 truncate' }, ONGLETS[k].court));
+      }),
+      fermes.length === 0 ? el('p', { className:'text-[12px] text-slate-400 px-2 py-2' }, 'Tout est déjà ouvert.') : null,
+      el('p', { className:'text-[10px] text-slate-400 px-2 py-1.5 border-t border-slate-100 mt-1' }, 'Croquis : la liste est figée.')) : null
+  );
+}
+
+function PanneauContexte({ ouverts, actif, setActif, fermer, ouvrirOnglet, allerAuMessage }) {
+  const o = ONGLETS[actif];
+  const st = o ? STYLE_TYPE[o.type] : null;
+  return el('section', { className:'flex-1 min-w-0 flex flex-col bg-slate-50' },
+    el('div', { className:'flex items-center gap-2 bg-indigo-600 text-white px-4 py-2' },
+      el(EyeOff, { size:15 }),
+      el('p', { className:'text-[12px] font-medium' }, 'Espace Somtech — le client ne voit rien de cette colonne. Chez lui, il n’y a que Slack.')),
+    el(BarreOnglets, { ouverts, actif, setActif, fermer, ouvrirOnglet }),
+    o ? el('div', { className:'flex-1 overflow-y-auto' },
+      el('div', { className:'bg-white border-b border-slate-200 px-5 py-4' },
+        el('div', { className:'flex items-start gap-3' },
+          el('div', { className:'h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ' + st.b }, el(st.i, { size:19 })),
+          el('div', { className:'min-w-0 flex-1' },
+            el('p', { className:'text-[10px] uppercase tracking-wide font-semibold text-slate-400' }, st.l),
+            el('h3', { className:'text-[16px] font-semibold text-slate-900 leading-tight' }, o.titre),
+            el('p', { className:'text-[11px] text-slate-500 mt-0.5' }, o.meta)),
+          el('button', {
+            onClick: () => allerAuMessage(o.ancre),
+            className:'shrink-0 inline-flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1.5 hover:bg-indigo-100'
+          }, el(CornerUpLeft, { size:12 }), o.ancreTexte))),
+      el('div', { className:'p-5' }, o.rendu),
+      el('div', { className:'flex items-start gap-2 text-[11px] text-slate-500 px-5 pb-5' },
+        el(Info, { size:14, className:'shrink-0 mt-0.5' }),
+        el('p', null, 'Rien de cet onglet n’est publié dans le canal. Pour que le client en voie une trace, il faut le lui envoyer comme message — geste explicite.')))
+      : el('div', { className:'flex-1 flex flex-col items-center justify-center text-center gap-2 p-8' },
+        el('p', { className:'text-[14px] text-slate-500' }, 'Aucun onglet ouvert.'),
+        el('p', { className:'text-[12px] text-slate-400' }, 'Cliquez un message à gauche, ou le « + » de la barre d’onglets.'))
+  );
+}
+
+// ============================================================
+// LE TELEPHONE DU CLIENT
+// ============================================================
+function Telephone({ onClose }) {
+  return el('aside', { className:'w-[330px] shrink-0 bg-slate-900 flex flex-col items-center justify-center p-5 gap-3' },
+    el('div', { className:'w-full flex items-center justify-between' },
+      el('p', { className:'text-[11px] uppercase tracking-wide text-slate-400 font-semibold' }, 'Chez le client'),
+      el('button', { onClick:onClose, className:'text-slate-500 hover:text-slate-200' }, el(X, { size:16 }))),
+    el('div', { className:'w-[250px] h-[500px] bg-slate-950 rounded-[2rem] border-4 border-slate-700 p-2 flex flex-col overflow-hidden' },
+      el('div', { className:'flex items-center gap-1.5 px-2 py-2 border-b border-slate-800' },
+        el(Hash, { size:13, className:'text-slate-500' }),
+        el('span', { className:'text-[12px] font-semibold text-slate-200 truncate' }, CANAL)),
+      el('div', { className:'flex-1 overflow-y-auto py-2 space-y-2.5 px-1' },
+        MESSAGES.map(m => el('div', { key:m.id, className:'flex gap-1.5' },
+          el('div', { className:'shrink-0 h-5 w-5 rounded text-[8px] font-bold text-white flex items-center justify-center ' + (m.qui === 'client' ? 'bg-emerald-600' : 'bg-slate-600') },
+            m.nom.split(' ').map(x => x[0]).join('')),
+          el('div', { className:'min-w-0' },
+            el('p', { className:'text-[10px] text-slate-400' }, m.nom.split(' ')[0] + ' · ' + m.h),
+            el('p', { className:'text-[11px] text-slate-200 leading-snug' }, m.texte),
+            m.piece ? el('p', { className:'text-[10px] text-sky-400 mt-1 truncate' }, 'pièce jointe : ' + m.piece) : null)))),
+      el('div', { className:'border-t border-slate-800 px-2 py-2 text-[10px] text-slate-600' }, 'Message…')),
+    el('p', { className:'text-[11px] text-slate-400 text-center leading-snug' },
+      'Slack, tel quel, sur son téléphone. ',
+      el('span', { className:'text-slate-200 font-medium' }, 'Ni les onglets, ni les billets, ni les maquettes ne lui parviennent'),
+      ' — sauf si on les lui envoie en message.')
+  );
+}
+
+// ============================================================
+// APP
+// ============================================================
+function App() {
+  const [ouverts, setOuverts] = useState(['doc-cahier', 'billet-42', 'maq-accueil']);
+  const [actif, setActif] = useState('doc-cahier');
+  const [tel, setTel] = useState(true);
+  const msgRefs = useRef({});
+
+  const allerAuMessage = (id) => {
+    const n = msgRefs.current[id];
+    if (n && n.scrollIntoView) n.scrollIntoView({ behavior:'smooth', block:'center' });
+  };
+
+  const ouvrirOnglet = (k) => {
+    setOuverts(prev => prev.indexOf(k) === -1 ? prev.concat([k]) : prev);
+    setActif(k);
+  };
+
+  const fermer = (k) => {
+    const reste = ouverts.filter(x => x !== k);
+    setOuverts(reste);
+    if (actif === k) setActif(reste.length ? reste[reste.length - 1] : null);
+  };
+
+  return el('div', { className:'h-screen flex flex-col' },
+    el('header', { className:'shrink-0 bg-slate-900 text-white px-5 py-3 flex items-center gap-4' },
+      el('div', { className:'min-w-0' },
+        el('h1', { className:'font-semibold text-[15px]' }, 'Atelier de conversation client'),
+        el('p', { className:'text-[11px] text-slate-400' }, 'Croquis d’écran — Slack reste le lien avec le client, on lui met un écran autour')),
+      el('span', { className:'ml-auto text-[10px] uppercase tracking-wide bg-amber-400 text-amber-950 font-bold rounded px-2 py-1' }, 'Croquis · aucune intégration'),
+      el('button', {
+        onClick: () => setTel(!tel),
+        className:'inline-flex items-center gap-1.5 text-[12px] rounded-lg px-3 py-1.5 border transition ' +
+          (tel ? 'bg-white text-slate-900 border-white' : 'border-slate-600 text-slate-200 hover:border-slate-400')
+      }, el(tel ? Eye : Smartphone, { size:14 }), tel ? 'Vue client affichée' : 'Voir ce que le client voit')),
+    el('div', { className:'flex-1 flex overflow-hidden' },
+      el(Conversation, { actifOnglet: actif, ouverts, ouvrirOnglet, msgRefs }),
+      el(PanneauContexte, { ouverts, actif, setActif, fermer, ouvrirOnglet, allerAuMessage }),
+      tel ? el(Telephone, { onClose: () => setTel(false) }) : null),
+    el('footer', { className:'shrink-0 bg-white border-t border-slate-200 px-5 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500' },
+      el('span', { className:'inline-flex items-center gap-1' }, el('span', { className:'h-2 w-2 rounded-full bg-emerald-500' }), 'Gauche : la conversation, reconstruite par nous à partir du canal'),
+      el('span', { className:'inline-flex items-center gap-1' }, el('span', { className:'h-2 w-2 rounded-full bg-indigo-500' }), 'Droite : nos onglets de contexte, invisibles pour le client'),
+      el('span', { className:'inline-flex items-center gap-1' }, el('span', { className:'h-2 w-2 rounded-full bg-slate-400' }), 'Données entièrement fictives'))
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(el(App, null));
+  </script>
+</body>
+</html>
