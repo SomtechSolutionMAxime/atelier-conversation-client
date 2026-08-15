@@ -38,9 +38,10 @@ const Smartphone = createIcon([{tag:'rect',attrs:{width:14,height:20,x:5,y:2,rx:
 const X = createIcon([{tag:'line',attrs:{x1:18,y1:6,x2:6,y2:18}},{tag:'line',attrs:{x1:6,y1:6,x2:18,y2:18}}]);
 const Plus = createIcon([{tag:'line',attrs:{x1:12,y1:5,x2:12,y2:19}},{tag:'line',attrs:{x1:5,y1:12,x2:19,y2:12}}]);
 const FileText = createIcon(['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',{tag:'polyline',attrs:{points:'14 2 14 8 20 8'}},{tag:'line',attrs:{x1:16,y1:13,x2:8,y2:13}},{tag:'line',attrs:{x1:16,y1:17,x2:8,y2:17}}]);
-const LayoutIcon = createIcon([{tag:'rect',attrs:{width:18,height:18,x:3,y:3,rx:2}},{tag:'line',attrs:{x1:3,y1:9,x2:21,y2:9}},{tag:'line',attrs:{x1:9,y1:21,x2:9,y2:9}}]);
 const ListChecks = createIcon([{tag:'polyline',attrs:{points:'3 6 4.5 7.5 7 5'}},{tag:'polyline',attrs:{points:'3 13 4.5 14.5 7 12'}},{tag:'polyline',attrs:{points:'3 20 4.5 21.5 7 19'}},{tag:'line',attrs:{x1:11,y1:6,x2:21,y2:6}},{tag:'line',attrs:{x1:11,y1:13,x2:21,y2:13}},{tag:'line',attrs:{x1:11,y1:20,x2:21,y2:20}}]);
-const CalendarIcon = createIcon([{tag:'rect',attrs:{width:18,height:18,x:3,y:4,rx:2,ry:2}},{tag:'line',attrs:{x1:16,y1:2,x2:16,y2:6}},{tag:'line',attrs:{x1:8,y1:2,x2:8,y2:6}},{tag:'line',attrs:{x1:3,y1:10,x2:21,y2:10}}]);
+const LinkIcon = createIcon(['M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71','M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71']);
+const Search = createIcon([{tag:'circle',attrs:{cx:11,cy:11,r:8}},{tag:'line',attrs:{x1:21,y1:21,x2:16.65,y2:16.65}}]);
+const Quote = createIcon(['M3 21c3 0 7-1 7-8V5a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4','M15 21c3 0 7-1 7-8V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4']);
 const Reply = createIcon([{tag:'polyline',attrs:{points:'9 14 4 9 9 4'}},{tag:'path',attrs:{d:'M20 20v-7a4 4 0 0 0-4-4H4'}}]);
 const CheckCheck = createIcon([{tag:'polyline',attrs:{points:'2 12 6.5 16.5 13 10'}},{tag:'polyline',attrs:{points:'11 15.5 12.5 17 21 8.5'}}]);
 const Folder = createIcon(['M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z']);
@@ -60,124 +61,131 @@ const MESSAGES = [
   { id:'m2', h:'09:15', moi:false, nom:'Camille Rousseau', onglet:'cahier',
     texte:'Bonjour Étienne. Il est compris — c’est le lot 2 du cahier. Je vous remets le passage exact.' },
   { id:'m3', h:'09:16', moi:false, nom:'Camille Rousseau', onglet:'cahier',
-    texte:'Cahier des charges, section 4.2.', piece:'Cahier des charges — Portail Verdelune v0.3' },
+    texte:'C’est le passage « Accès fournisseurs » du cahier des charges.', lien:'Portail fournisseurs — cahier des charges' },
   { id:'m4', h:'09:41', moi:true, nom:'Étienne Bélanger', onglet:'compte-rendu',
-    texte:'Parfait, merci. Et pour la reprise des anciens bons de commande — on avait tranché quoi à la rencontre du 12 ?', lu:'Lu par Camille · 09:42' },
+    texte:'Parfait, merci. Et pour la reprise des anciens bons de commande — on avait tranché quoi à la rencontre d’ouverture ?', lu:'Lu par Camille · 09:42' },
   { id:'m5', h:'09:46', moi:false, nom:'Camille Rousseau', onglet:'compte-rendu',
-    texte:'C’est au compte rendu du 12 août, décision n°3 : reprise des 24 derniers mois seulement. Le reste part aux archives.' },
-  { id:'m6', h:'11:20', moi:true, nom:'Étienne Bélanger', onglet:'maquette',
-    texte:'Autre chose : la page d’accueil, on peut revoir le haut de page ? Ma directrice le trouve trop chargé.', lu:'Lu par Camille · 11:21' },
-  { id:'m7', h:'11:23', moi:false, nom:'Camille Rousseau', onglet:'maquette', nouveau:true,
-    texte:'Oui. J’ai déposé une version 2 avec un bandeau allégé — les deux sont dans vos maquettes, vous comparez et vous me dites.' },
-  { id:'m8', h:'11:31', moi:true, nom:'Étienne Bélanger', onglet:'calendrier',
-    texte:'Je regarde ça aujourd’hui. Et les dates de novembre tiennent toujours ?', lu:'Lu par Camille · 11:33' },
-  { id:'m9', h:'11:34', moi:false, nom:'Camille Rousseau', onglet:'calendrier',
-    texte:'Oui, rien n’a bougé au calendrier de livraison. Il est à jour dans votre espace.' }
+    texte:'C’est écrit au compte rendu de la rencontre, décision n°3 : reprise des 24 derniers mois seulement. Le reste part aux archives.' },
+  { id:'m6', h:'11:20', moi:true, nom:'Étienne Bélanger', onglet:'fil',
+    texte:'Autre chose : le passage sur la reprise de l’historique, ma directrice ne le lit pas comme moi. On en discute où, pour ne pas mélanger avec le reste ?', lu:'Lu par Camille · 11:21' },
+  { id:'m7', h:'11:23', moi:false, nom:'Camille Rousseau', onglet:'fil', nouveau:true,
+    texte:'J’ai ouvert un fil accroché à ce paragraphe précis — on répond dedans, et la discussion reste collée au bon passage plutôt qu’au document entier.' },
+  { id:'m8', h:'11:31', moi:true, nom:'Étienne Bélanger', onglet:'liens',
+    texte:'Bien vu. Et est-ce que d’autres documents parlent de cet accès fournisseurs ? J’aimerais ne rien relire pour rien.', lu:'Lu par Camille · 11:33' },
+  { id:'m9', h:'11:34', moi:false, nom:'Camille Rousseau', onglet:'liens',
+    texte:'Trois documents pointent vers ce passage. Je vous ai ouvert la liste à droite — vous voyez d’un coup qui cite quoi.' }
 ];
 
 // ============================================================
 // PETITS RENDUS
 // ============================================================
-function Wireframe({ variante }) {
-  const bandeau = variante === 1
-    ? el('div', { className:'bg-slate-800 rounded-md p-3 space-y-2' },
-        el('div', { className:'h-4 w-2/3 bg-slate-500 rounded' }),
-        el('div', { className:'h-2.5 w-full bg-slate-600 rounded' }),
-        el('div', { className:'h-2.5 w-4/5 bg-slate-600 rounded' }),
-        el('div', { className:'flex gap-2 pt-1' },
-          el('div', { className:'h-6 w-20 bg-slate-500 rounded' }),
-          el('div', { className:'h-6 w-20 bg-slate-600 rounded' }),
-          el('div', { className:'h-6 w-20 bg-slate-600 rounded' })))
-    : el('div', { className:'bg-slate-800 rounded-md p-3 space-y-2' },
-        el('div', { className:'h-4 w-1/2 bg-slate-500 rounded' }),
-        el('div', { className:'h-6 w-24 bg-slate-600 rounded' }));
-  return el('div', { className:'flex-1 min-w-0' },
-    el('div', { className:'flex items-center gap-2 mb-1.5' },
-      el('span', { className:'text-[11px] font-semibold text-slate-600' }, variante === 1 ? 'v1 — actuelle' : 'v2 — bandeau allégé'),
-      variante === 2 ? el('span', { className:'text-[10px] bg-emerald-100 text-emerald-800 rounded px-1.5 py-0.5' }, 'déposée ce matin') : null),
-    el('div', { className:'border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3' },
-      bandeau,
-      el('div', { className:'grid grid-cols-3 gap-2' },
-        el('div', { className:'h-14 bg-white border border-slate-200 rounded' }),
-        el('div', { className:'h-14 bg-white border border-slate-200 rounded' }),
-        el('div', { className:'h-14 bg-white border border-slate-200 rounded' })),
-      el('div', { className:'h-16 bg-white border border-slate-200 rounded' })));
+const DOC_CAHIER = 'Portail fournisseurs — cahier des charges';
+
+// Un bloc du document, cité tel quel : c'est sur ce bloc que le fil s'accroche.
+function BlocCite({ titre, texte, surligne }) {
+  return el('div', { className:'border rounded-lg px-4 py-3 ' + (surligne ? 'border-sky-200 bg-sky-50/60' : 'border-slate-200 bg-white') },
+    el('p', { className:'flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1' },
+      el(Quote, { size:11 }), titre),
+    el('p', { className:'text-[14px] text-slate-700 leading-relaxed' }, texte));
 }
 
 // ============================================================
-// LES ONGLETS — les documents et maquettes du client
+// LES ONGLETS — les documents du client, tels que l'espace les porte
 // ============================================================
 const ONGLETS = {
   'cahier': {
-    type:'doc', court:'Cahier des charges v0.3',
-    titre:'Cahier des charges — Portail Verdelune v0.3',
-    meta:'Votre espace · Projets / Portail · mis à jour il y a 3 jours',
+    type:'doc', court:DOC_CAHIER,
+    titre:DOC_CAHIER,
+    meta:'Votre espace · Dossier Portail · étiquettes : portail, fournisseurs',
     ancre:'m3', ancreTexte:'mentionné à 09:16',
+    rendu: el('div', { className:'space-y-3' },
+      el(BlocCite, {
+        titre:'Accès fournisseurs',
+        surligne:true,
+        texte:'Le portail ouvre un accès en lecture aux fournisseurs référencés : bons de commande en cours, état des livraisons confirmées, historique repris. Cet accès fait partie du lot 2 et n’entraîne pas de coût additionnel.' }),
+      el(BlocCite, {
+        titre:'Reprise de l’historique',
+        texte:'Seuls les 24 derniers mois de bons de commande sont repris dans le portail. Le reste demeure aux archives et reste consultable sur demande.' }),
+      el(BlocCite, {
+        titre:'Ce qui reste hors portée',
+        texte:'La saisie de factures par le fournisseur n’est pas couverte. Elle fera l’objet d’une demande séparée.' }),
+      el('p', { className:'text-[11px] text-slate-400' },
+        'Chaque paragraphe de ce document peut porter sa propre discussion — 1 fil est ouvert en ce moment.'))
+  },
+  'fil': {
+    type:'fil', court:'Discussion sur ce passage',
+    titre:'Discussion sur « Reprise de l’historique »',
+    meta:'Fil accroché à un paragraphe de « ' + DOC_CAHIER + ' » · 3 réponses · ouvert',
+    ancre:'m7', ancreTexte:'mentionné à 11:23',
     rendu: el('div', { className:'space-y-4' },
-      el('div', null,
-        el('p', { className:'text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1' }, '§ 4.2 — Accès fournisseurs'),
-        el('blockquote', { className:'border-l-2 border-sky-400 pl-4 text-[14px] text-slate-700 leading-relaxed' },
-          'Le portail ouvre un accès en lecture aux fournisseurs référencés : bons de commande en cours, dates de livraison confirmées, historique sur 12 mois. Cet accès fait partie du lot 2 et n’entraîne pas de coût additionnel.')),
-      el('div', null,
-        el('p', { className:'text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1' }, '§ 4.3 — Ce qui reste hors portée'),
-        el('blockquote', { className:'border-l-2 border-slate-300 pl-4 text-[14px] text-slate-600 leading-relaxed' },
-          'La saisie de factures par le fournisseur n’est pas couverte. Elle fera l’objet d’une demande séparée.')),
-      el('p', { className:'text-[11px] text-slate-400' }, '3 autres passages du document mentionnent « fournisseur ».'))
+      el(BlocCite, {
+        titre:'Le passage dont on parle',
+        surligne:true,
+        texte:'Seuls les 24 derniers mois de bons de commande sont repris dans le portail. Le reste demeure aux archives et reste consultable sur demande.' }),
+      el('div', { className:'space-y-2 pl-3 border-l-2 border-rose-200' },
+        [
+          ['CR', 'Camille Rousseau', 'bg-teal-600', 'J’ouvre le fil ici : tout ce qu’on se dira sur la reprise restera accroché à ce paragraphe, pas noyé dans le document.'],
+          ['EB', 'Étienne Bélanger', 'bg-slate-700', 'Ma directrice lit « consultable sur demande » comme « on peut tout ravoir ». Est-ce bien ça ?'],
+          ['CR', 'Camille Rousseau', 'bg-teal-600', 'Oui, mais hors du portail : on vous le sort à la pièce. Je reformule le paragraphe si c’est plus clair pour elle.']
+        ].map(function (r, i) {
+          return el('div', { key:i, className:'flex gap-2.5 bg-white border border-slate-200 rounded-lg px-3 py-2.5' },
+            el('span', { className:'shrink-0 h-6 w-6 rounded text-[10px] font-bold text-white flex items-center justify-center ' + r[2] }, r[0]),
+            el('div', { className:'min-w-0' },
+              el('p', { className:'text-[12px] font-semibold text-slate-900' }, r[1]),
+              el('p', { className:'text-[13px] text-slate-700 leading-relaxed' }, r[3])));
+        })),
+      el('div', { className:'flex items-center gap-2 border border-slate-300 rounded-lg px-3 py-2 bg-white' },
+        el('span', { className:'flex-1 text-[13px] text-slate-400' }, 'Répondre dans ce fil…'),
+        el(Send, { size:15, className:'text-slate-400' })),
+      el('p', { className:'text-[11px] text-slate-400' }, 'Le fil se ferme quand la question est réglée ; le paragraphe, lui, garde sa trace.'))
+  },
+  'liens': {
+    type:'liens', court:'Documents liés',
+    titre:'Documents liés à « ' + DOC_CAHIER + ' »',
+    meta:'Ce qui pointe vers ce document · 3 documents',
+    ancre:'m9', ancreTexte:'mentionné à 11:34',
+    rendu: el('div', { className:'space-y-2' },
+      [
+        ['Compte rendu — rencontre d’ouverture', 'Décision n°3 : la reprise suit ce qui est écrit au [[Portail fournisseurs — cahier des charges]].'],
+        ['Note — questions des fournisseurs', 'Les accès demandés sont couverts par le lot 2 du [[Portail fournisseurs — cahier des charges]].'],
+        ['Sommaire exécutif — portail', 'Portée et exclusions reprises du [[Portail fournisseurs — cahier des charges]], sans changement.']
+      ].map(function (d, i) {
+        return el('div', { key:i, className:'border border-slate-200 rounded-lg px-4 py-3 bg-white' },
+          el('p', { className:'flex items-center gap-1.5 text-[13px] font-semibold text-slate-900' },
+            el(FileText, { size:13, className:'text-slate-400' }), d[0]),
+          el('p', { className:'text-[12px] text-slate-600 mt-1 leading-relaxed' }, d[1]));
+      }).concat([
+        el('p', { key:'n', className:'text-[11px] text-slate-400 pt-1' },
+          'Ces liens sont écrits dans le texte des documents ; la liste se refait toute seule quand quelqu’un en ajoute un.')
+      ]))
   },
   'compte-rendu': {
-    type:'cr', court:'Compte rendu — 12 août',
-    titre:'Compte rendu — rencontre du 12 août',
-    meta:'Votre espace · Rencontres · 4 décisions',
+    type:'cr', court:'Compte rendu — rencontre d’ouverture',
+    titre:'Compte rendu — rencontre d’ouverture',
+    meta:'Écrit par le générateur de compte rendu · 4 décisions',
     ancre:'m5', ancreTexte:'mentionné à 09:46',
     rendu: el('div', { className:'space-y-3' },
       [
         ['1', 'Le portail ouvre en deux temps : équipe interne d’abord, fournisseurs ensuite.'],
-        ['2', 'Deux personnes de Verdelune valident les maquettes avant tout développement.'],
+        ['2', 'Deux personnes de votre équipe relisent chaque document avant tout développement.'],
         ['3', 'Reprise des bons de commande limitée aux 24 derniers mois ; le reste part aux archives.'],
-        ['4', 'Point d’avancement toutes les deux semaines, le mardi.']
+        ['4', 'Tout ce qui sort de la portée écrite passe par une demande séparée.']
       ].map(function (d, i) {
         return el('div', { key:i, className:'flex gap-3 border border-slate-200 rounded-lg px-4 py-3 bg-white' },
           el('span', { className:'shrink-0 h-6 w-6 rounded-full bg-amber-100 text-amber-800 text-[12px] font-bold flex items-center justify-center' }, d[0]),
           el('p', { className:'text-[13px] text-slate-700 leading-relaxed' }, d[1]));
-      }))
-  },
-  'maquette': {
-    type:'maq', court:'Maquette accueil v1/v2',
-    titre:'Page d’accueil du portail — haut de page',
-    meta:'Vos maquettes · comparaison v1 / v2 · en attente de votre avis',
-    ancre:'m7', ancreTexte:'mentionné à 11:23',
-    rendu: el('div', { className:'space-y-4' },
-      el('div', { className:'flex gap-4' }, el(Wireframe, { variante:1 }), el(Wireframe, { variante:2 })),
-      el('ul', { className:'text-[13px] text-slate-700 space-y-1 list-disc pl-4' },
-        el('li', null, 'v1 porte trois appels à l’action dans le bandeau.'),
-        el('li', null, 'v2 : un seul, les raccourcis descendent dans la grille.'),
-        el('li', null, 'Votre retour est attendu avant le développement de la page.')))
-  },
-  'calendrier': {
-    type:'cal', court:'Calendrier de livraison',
-    titre:'Calendrier de livraison — Portail Verdelune',
-    meta:'Votre espace · Projets / Portail · à jour au 15 août',
-    ancre:'m9', ancreTexte:'mentionné à 11:34',
-    rendu: el('div', { className:'space-y-2' },
-      [
-        ['Septembre', 'Accès équipe interne', 'en cours', 'bg-sky-100 text-sky-800'],
-        ['Octobre', 'Maquettes validées et page d’accueil livrée', 'à venir', 'bg-slate-100 text-slate-600'],
-        ['Novembre', 'Ouverture aux fournisseurs', 'à venir', 'bg-slate-100 text-slate-600'],
-        ['Décembre', 'Reprise de l’historique 24 mois', 'à venir', 'bg-slate-100 text-slate-600']
-      ].map(function (j, i) {
-        return el('div', { key:i, className:'flex items-center gap-3 border border-slate-200 rounded-lg px-4 py-3 bg-white' },
-          el('span', { className:'w-24 shrink-0 text-[12px] font-semibold text-slate-500' }, j[0]),
-          el('span', { className:'flex-1 text-[13px] text-slate-700' }, j[1]),
-          el('span', { className:'text-[11px] rounded px-2 py-0.5 ' + j[3] }, j[2]));
-      }))
+      }).concat([
+        el('p', { key:'n', className:'text-[11px] text-slate-400' },
+          'Document écrit à partir de la rencontre, puis relu — il vit dans votre espace comme les autres.')
+      ]))
   }
 };
 
 const STYLE_TYPE = {
-  doc: { i: FileText,     c:'text-sky-600',     b:'bg-sky-100 text-sky-700',        l:'Document' },
-  maq: { i: LayoutIcon,   c:'text-violet-600',  b:'bg-violet-100 text-violet-700',  l:'Maquette' },
-  cr:  { i: ListChecks,   c:'text-amber-600',   b:'bg-amber-100 text-amber-700',    l:'Compte rendu' },
-  cal: { i: CalendarIcon, c:'text-emerald-600', b:'bg-emerald-100 text-emerald-700',l:'Calendrier' }
+  doc:   { i: FileText,      c:'text-sky-600',    b:'bg-sky-100 text-sky-700',      l:'Document' },
+  fil:   { i: MessageSquare, c:'text-rose-600',   b:'bg-rose-100 text-rose-700',    l:'Fil accroché à un passage' },
+  liens: { i: LinkIcon,      c:'text-violet-600', b:'bg-violet-100 text-violet-700',l:'Documents liés' },
+  cr:    { i: ListChecks,    c:'text-amber-600',  b:'bg-amber-100 text-amber-700',  l:'Compte rendu' }
 };
 
 // ============================================================
@@ -187,9 +195,9 @@ const STYLE_TYPE = {
 // ============================================================
 const ETAPES = [
   'Je relis votre cahier des charges, le passage sur les fournisseurs…',
-  'Je remets la main sur ce qu’on s’était dit à la rencontre du 12 août…',
-  'Je compare la version 2 de la maquette avec vos remarques de mardi…',
-  'Je vérifie que les dates de novembre tiennent toujours…',
+  'Je remets la main sur ce qu’on s’était dit à la rencontre d’ouverture…',
+  'Je rouvre le fil accroché au paragraphe sur la reprise de l’historique…',
+  'Je cherche les autres documents qui pointent vers ce passage…',
   'Je rassemble tout ça pour vous répondre d’un coup…'
 ];
 const FINI = 'J’ai fini — regardez à droite, j’ai ouvert les documents dont on parlait.';
@@ -267,9 +275,10 @@ function Message({ m, actif, ouvert, onClick }) {
           el('span', { className:'ml-auto opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 text-[11px] text-slate-500' },
             el(Reply, { size:12 }), 'Répondre')),
         el('p', { className:'text-[13px] text-slate-700 mt-0.5' }, m.texte),
-        m.piece ? el('span', { className:'mt-1.5 inline-flex items-center gap-2 border border-slate-200 rounded-md bg-white px-2.5 py-1.5' },
+        m.lien ? el('span', { className:'mt-1.5 inline-flex items-center gap-2 border border-slate-200 rounded-md bg-white px-2.5 py-1.5' },
           el(FileText, { size:14, className:'text-slate-500' }),
-          el('span', { className:'text-[12px] text-slate-700' }, m.piece)) : null,
+          el('span', { className:'text-[12px] text-slate-700' }, m.lien),
+          el('span', { className:'text-[10px] text-slate-400' }, 'lien vers le document')) : null,
         m.lu ? el('span', { className:'mt-1 flex items-center gap-1 text-[10px] text-slate-400' },
           el(CheckCheck, { size:12 }), m.lu) : null,
         el('span', { className:'mt-1.5 flex items-center gap-1 text-[10px] ' + (actif ? st.c : 'text-slate-400 opacity-0 group-hover:opacity-100') },
@@ -417,7 +426,7 @@ function Telephone({ onClose }) {
             el('div', { className:'min-w-0' },
               el('p', { className:'text-[10px] text-slate-400' }, m.nom.split(' ')[0] + ' · ' + m.h),
               el('p', { className:'text-[11px] text-slate-200 leading-snug' }, m.texte),
-              m.piece ? el('p', { className:'text-[10px] text-sky-400 mt-1 truncate' }, 'pièce jointe : ' + m.piece) : null));
+              m.lien ? el('p', { className:'text-[10px] text-sky-400 mt-1 truncate' }, '[[' + m.lien + ']]') : null));
         })),
       el('div', { className:'border-t border-slate-800 px-2 py-2 text-[10px] text-slate-600' }, 'Message…')),
     el('p', { className:'text-[11px] text-slate-400 text-center leading-snug' },
@@ -430,7 +439,7 @@ function Telephone({ onClose }) {
 // APP
 // ============================================================
 function App() {
-  const [ouverts, setOuverts] = useState(['cahier', 'compte-rendu', 'maquette']);
+  const [ouverts, setOuverts] = useState(['cahier', 'fil', 'liens']);
   const [actif, setActif] = useState('cahier');
   const [tel, setTel] = useState(true);
   const msgRefs = useRef({});
@@ -461,7 +470,7 @@ function App() {
       el('nav', { className:'flex items-center gap-1 ml-4' },
         el('span', { className:'text-[12px] text-slate-500 rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5' }, el(Folder, { size:13 }), 'Documents'),
         el('span', { className:'text-[12px] font-semibold text-slate-900 bg-slate-100 rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5' }, el(MessageSquare, { size:13 }), 'Conversation'),
-        el('span', { className:'text-[12px] text-slate-500 rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5' }, el(LayoutIcon, { size:13 }), 'Maquettes')),
+        el('span', { className:'text-[12px] text-slate-500 rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5' }, el(Search, { size:13 }), 'Rechercher')),
       el('span', { className:'ml-auto text-[10px] uppercase tracking-wide bg-amber-400 text-amber-950 font-bold rounded px-2 py-1' }, 'Croquis'),
       el('button', {
         onClick: function () { setTel(!tel); },
@@ -476,7 +485,7 @@ function App() {
       tel ? el(Telephone, { onClose: function () { setTel(false); } }) : null),
     el('footer', { className:'shrink-0 bg-white border-t border-slate-200 px-5 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500' },
       el('span', { className:'inline-flex items-center gap-1' }, el('span', { className:'h-2 w-2 rounded-full bg-teal-500' }), 'À gauche : la conversation — la même que dans Slack, jamais une seconde'),
-      el('span', { className:'inline-flex items-center gap-1' }, el('span', { className:'h-2 w-2 rounded-full bg-sky-500' }), 'À droite : vos documents et vos maquettes, par onglets'),
+      el('span', { className:'inline-flex items-center gap-1' }, el('span', { className:'h-2 w-2 rounded-full bg-sky-500' }), 'À droite : vos documents, leurs discussions et leurs liens, par onglets'),
       el('span', { className:'inline-flex items-center gap-1' }, el('span', { className:'h-2 w-2 rounded-full bg-slate-400' }), 'Croquis — données fictives · le fil est affiché par le module, Slack n’acceptant pas d’être encastré dans une page'))
   );
 }
